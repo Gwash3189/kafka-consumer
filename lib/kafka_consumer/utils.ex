@@ -69,6 +69,10 @@ defmodule KafkaConsumer.Utils do
     [topic, partition] |> Enum.join("$") |> String.to_atom
   end
 
+  def has_consumer_group? do
+    Application.get_env(:kafka_ex, :consumer_group) != :no_consumer_group
+  end
+
   # defp event_handler_spec({topic, partition, handler, handler_pool, size, max_overflow}) do
   defp event_handler_spec({handler, topics, opts}) do
     size = Keyword.get(opts, :size, default_pool_size())
@@ -108,5 +112,9 @@ defmodule KafkaConsumer.Utils do
 
   defp default_pool_max_overflow do
     Application.get_env(:kafka_consumer, :default_pool_max_overflow)
+  end
+
+  def offset_server do
+    Application.get_env(:kafka_consumer, :offset_server)
   end
 end
