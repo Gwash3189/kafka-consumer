@@ -4,6 +4,7 @@ defmodule KafkaConsumer.OffsetServerTest do
 
   @the_topic_string "the.topic"
   @the_topic_atom :the_topic
+  @partition 0
 
   def mock_lastest_offset do
     fn(_topic, _partition) -> [%{partition_offsets: [%{offset: [0]}]}] end
@@ -12,7 +13,7 @@ defmodule KafkaConsumer.OffsetServerTest do
   describe "when start_link/1 is called with a string" do
     test "it starts a GenServer" do
       with_mock KafkaEx, [latest_offset: mock_lastest_offset] do
-        {:ok, pid} = KafkaConsumer.TestOffsetServer.start_link(@the_topic_string)
+        {:ok, pid} = KafkaConsumer.TestOffsetServer.start_link(@the_topic_string, @partition)
 
         assert pid
       end
@@ -20,7 +21,7 @@ defmodule KafkaConsumer.OffsetServerTest do
 
     test "it registers the GenServer under the topic" do
       with_mock KafkaEx, [latest_offset: mock_lastest_offset] do
-        {:ok, pid} = KafkaConsumer.TestOffsetServer.start_link(@the_topic_string)
+        {:ok, pid} = KafkaConsumer.TestOffsetServer.start_link(@the_topic_string, @partition)
 
         assert Process.whereis(@the_topic_atom) == pid
       end
@@ -30,7 +31,7 @@ defmodule KafkaConsumer.OffsetServerTest do
   describe "behaviour" do
     setup do
       with_mock KafkaEx, [latest_offset: mock_lastest_offset] do
-        KafkaConsumer.TestOffsetServer.start_link(@the_topic_string)
+        KafkaConsumer.TestOffsetServer.start_link(@the_topic_string, @partition)
       end
 
       {:ok, []}

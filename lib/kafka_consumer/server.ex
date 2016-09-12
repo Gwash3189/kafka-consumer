@@ -56,20 +56,20 @@ defmodule KafkaConsumer.Server do
   defp stream(%{worker_name: worker_name, topic: topic,
   partition: partition, handler_pool: handler_pool, handler: handler}) do
     Utils.prepare_stream(worker_name)
-    for message <- KafkaEx.stream(topic, partition, consumer_options(worker_name, topic)) do
+    for message <- KafkaEx.stream(topic, partition, consumer_options(worker_name, topic, partition)) do
       :poolboy.transaction(handler_pool, fn(pid) ->
         handler.handle_event(pid, {topic, partition, message})
       end)
     end
   end
 
-  defp consumer_options(worker_name, topic) do
+  defp consumer_options(worker_name, topic, partition) do
     case Utils.has_consumer_group? do
       false ->
         [
           worker_name: worker_name,
           auto_commit: false,
-          offset: Utils.offset_server().get_latest_offset(topic)
+          offset: Utils.offset_server().get_latest_offset(topic, partition)
         ]
       true ->
         [worker_name: worker_name]

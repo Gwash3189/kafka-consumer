@@ -1,5 +1,6 @@
 defmodule KafkaConsumer.OffsetServer do
   @type offset :: number
+  @type parition :: number
   @type noreply :: {:noreply, offset}
   @type reply :: {:reply, offset, offset}
   @type topic :: String.t
@@ -8,12 +9,13 @@ defmodule KafkaConsumer.OffsetServer do
   @callback decrement(topic) :: noreply
   @callback get(topic) :: reply
   @callback save(topic) :: reply
-  @callback start_link(topic) :: {:ok, pid}
+  @callback start_link(topic, parition) :: {:ok, pid}
 
 
   defmacro __using__(_) do
     quote do
       @type offset :: number
+      @type partition :: number
       @type noreply :: {:noreply, offset}
       @type reply :: {:reply, offset, offset}
       @type topic :: String.t
@@ -31,12 +33,12 @@ defmodule KafkaConsumer.OffsetServer do
       @doc """
       Starts a OffsetServer for the given topic
       """
-      @spec start_link(topic) :: {:ok, pid}
-      def start_link(topic) do
+      @spec start_link(topic, partition) :: {:ok, pid}
+      def start_link(topic, partition) do
         name = make_server_name(topic)
         GenServer.start_link(
           __MODULE__,
-          get_latest_offset(topic),
+          get_latest_offset(topic, partition),
           name: name,
           id: name
         )
@@ -110,9 +112,9 @@ defmodule KafkaConsumer.OffsetServer do
       gets the offset from the kafka topic.
       Defaults to the latest_offset
       """
-      @spec get_latest_offset(topic) :: offset
-      def get_latest_offset(topic) do
-        response = KafkaEx.latest_offset(topic, 0)
+      @spec get_latest_offset(topic, partition) :: offset
+      def get_latest_offset(topic, partition) do
+        response = KafkaEx.latest_offset(topic, partition)
 
         response
           |> Enum.at(0)
@@ -122,16 +124,13 @@ defmodule KafkaConsumer.OffsetServer do
           |> Enum.at(0)
       end
 
-      @doc """
-      makes the server name from a topic
-      """
       @spec make_server_name(topic) :: atom
       defp make_server_name(topic) do
         String.to_atom(String.replace(topic, ".", "_"))
       end
 
       defoverridable [
-        start_link: 1,
+        start_link: 2,
         handle_cast: 2,
         handle_call: 3,
         get: 1,
@@ -139,7 +138,7 @@ defmodule KafkaConsumer.OffsetServer do
         decrement: 1,
         increment: 1,
         make_server_name: 1,
-        get_latest_offset: 1
+        get_latest_offset: 2
       ]
     end
   end
