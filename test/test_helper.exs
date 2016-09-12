@@ -36,4 +36,8 @@ defmodule KafkaConsumer.TestEventHandler do
   end
 end
 
+defmodule KafkaConsumer.TestOffsetServer do
+  use KafkaConsumer.OffsetServer
+end
+
 Application.ensure_all_started(:kafka_consumer)

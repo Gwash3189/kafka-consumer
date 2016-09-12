@@ -101,13 +101,6 @@ defmodule KafkaConsumer.OffsetServer do
         {:reply, offset, offset}
       end
 
-      @doc """
-      makes the server name from a topic
-      """
-      @spec make_server_name(topic) :: atom
-      def make_server_name(topic) do
-        String.to_atom(String.replace(topic, ".", "_"))
-      end
 
       @doc """
       gets the offset from the kafka topic.
@@ -123,6 +116,14 @@ defmodule KafkaConsumer.OffsetServer do
           |> Enum.at(0)
           |> Map.get(:offset)
           |> Enum.at(0)
+      end
+
+      @doc """
+      makes the server name from a topic
+      """
+      @spec make_server_name(topic) :: atom
+      defp make_server_name(topic) do
+        String.to_atom(String.replace(topic, ".", "_"))
       end
 
       defoverridable [
