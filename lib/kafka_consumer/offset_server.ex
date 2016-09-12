@@ -28,6 +28,10 @@ defmodule KafkaConsumer.OffsetServer do
 
       @behaviour KafkaConsumer.OffsetServer
 
+      @doc """
+      Starts a OffsetServer for the given topic
+      """
+      @spec start_link(topic) :: {:ok, pid}
       def start_link(topic) do
         name = make_server_name(topic)
         GenServer.start_link(
